@@ -354,6 +354,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         ])
         paintModes()
         window.makeKeyAndOrderFront(nil)
+        if let iconURL = Bundle.main.url(forResource: "AltChecker", withExtension: "icns"),
+           let icon = NSImage(contentsOf: iconURL) {
+            NSApp.applicationIconImage = icon
+        }
         NSApp.activate(ignoringOtherApps: true)
     }
 

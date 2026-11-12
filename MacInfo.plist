@@ -9,9 +9,11 @@
   <key>CFBundleIdentifier</key>
   <string>com.altchecker.mac</string>
   <key>CFBundleVersion</key>
-  <string>1.0</string>
+  <string>1.1</string>
   <key>CFBundleShortVersionString</key>
-  <string>1.0</string>
+  <string>1.1</string>
+  <key>CFBundleIconFile</key>
+  <string>AltChecker</string>
   <key>CFBundleExecutable</key>
   <string>AltChecker</string>
   <key>CFBundlePackageType</key>
