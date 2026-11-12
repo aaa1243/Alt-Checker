@@ -3,6 +3,8 @@ on:
   workflow_dispatch:
   push:
     branches: [main, master]
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: windows-latest
@@ -15,7 +17,8 @@ jobs:
           Install-Module ps2exe -Scope CurrentUser -Force
           Import-Module ps2exe
           Invoke-ps2exe -inputFile TraceCheck.ps1 -outputFile TraceCheck.exe -noConsole -requireAdmin -STA -title "Alt Checker" -iconFile AltChecker.ico
-      - uses: actions/upload-artifact@v4
+      - name: Publish
+        uses: softprops/action-gh-release@v2
         with:
-          name: TraceCheck
-          path: TraceCheck.exe
+          tag_name: latest
+          files: TraceCheck.exe
