@@ -3,13 +3,11 @@ on:
   workflow_dispatch:
   push:
     branches: [main, master]
-permissions:
-  contents: write
 jobs:
-  build:
+  windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build EXE
         shell: pwsh
         run: |
@@ -17,8 +15,37 @@ jobs:
           Install-Module ps2exe -Scope CurrentUser -Force
           Import-Module ps2exe
           Invoke-ps2exe -inputFile TraceCheck.ps1 -outputFile TraceCheck.exe -noConsole -requireAdmin -STA -title "Alt Checker" -iconFile AltChecker.ico
-      - name: Publish
-        uses: softprops/action-gh-release@v2
+      - uses: actions/upload-artifact@v6
         with:
-          tag_name: latest
-          files: TraceCheck.exe
+          name: TraceCheck
+          path: TraceCheck.exe
+  mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build Mac app
+        run: |
+          mkdir -p AltChecker.app/Contents/MacOS
+          cp MacInfo.plist AltChecker.app/Contents/Info.plist
+          xcrun swiftc -O -parse-as-library -sdk "$(xcrun --show-sdk-path)" -framework AppKit -o AltChecker.app/Contents/MacOS/AltChecker AltCheckerMac.swift
+          codesign --force --deep --sign - AltChecker.app
+          ditto -c -k --keepParent AltChecker.app AltChecker-mac.zip
+      - uses: actions/upload-artifact@v6
+        with:
+          name: AltChecker-mac
+          path: AltChecker-mac.zip
+  publish:
+    needs: [windows, mac]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v6
+        with:
+          path: dist
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view latest >/dev/null 2>&1 || gh release create latest --title "Alt Checker" --notes "Windows EXE and Mac app."
+          gh release upload latest dist/TraceCheck/TraceCheck.exe dist/AltChecker-mac/AltChecker-mac.zip --clobber
